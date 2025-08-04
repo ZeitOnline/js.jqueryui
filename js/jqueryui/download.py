@@ -1,3 +1,4 @@
+import importlib.metadata
 import urllib.parse
 import urllib.request
 from warnings import warn
@@ -8,7 +9,6 @@ try:
     import json
 except ImportError:
     import simplejson as json
-from pkg_resources import get_distribution
 import shutil
 import os
 import tempfile
@@ -134,7 +134,7 @@ download_builder = []
 def get_download_builder():
     if not download_builder:
         ui_version = re.sub(r'(-|dev).*', '',
-                            get_distribution('js.jqueryui').version)
+                            importlib.metadata.version('js.jqueryui'))
 
         builder = DownloadBuilder()
         download_builder.append(builder)
