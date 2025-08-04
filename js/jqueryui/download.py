@@ -1,8 +1,9 @@
-import urllib
+import urllib.parse
+import urllib.request
 from warnings import warn
 from lxml import etree
 import zipfile
-import StringIO
+import io
 try:
     import json
 except ImportError:
@@ -55,7 +56,7 @@ class Download(object):
             dest = os.path.join(dest_dir, extract_path)
             if not os.path.isdir(os.path.dirname(dest)):
                 os.makedirs(os.path.dirname(dest))
-            file(dest, "wb").write(archive.read(path))
+            open(dest, "wb").write(archive.read(path))
 
     def unpack_js(self, dest_dir):
         def path_mapper(path):
@@ -112,7 +113,7 @@ class DownloadBuilder(object):
             yield theme_name, theme_params
 
     def build(self, theme_name='No Theme', theme_params='none'):
-        print 'downloading', theme_name
+        print('downloading', theme_name)
         inputs = self.download_page_html.findall(
             '//div[@id="download-builder-components"]//input')
         query = {
@@ -122,9 +123,9 @@ class DownloadBuilder(object):
             'ui-version': self.stable_version,
             'files[]': [input.attrib['value'] for input in inputs],
             }
-        postdata = urllib.urlencode(query, doseq=True)
-        theme_zip = urllib.urlopen(jqueryui_download_url, postdata).read()
-        archive = zipfile.ZipFile(StringIO.StringIO(theme_zip))
+        postdata = urllib.parse.urlencode(query, doseq=True)
+        theme_zip = urllib.request.urlopen(jqueryui_download_url, postdata).read()
+        archive = zipfile.ZipFile(io.StringIO(theme_zip))
         return Download(archive)
 
 
@@ -147,7 +148,7 @@ def get_download_builder():
 
 def expand_css_imports(filename):
     dir_, base = os.path.split(filename)
-    for line in file(filename):
+    for line in open(filename):
         if line.startswith('@import '):
             import_file = line[line.index('"')+1:line.rindex('"')]
             for line in expand_css_imports(os.path.join(dir_, import_file)):
@@ -176,7 +177,7 @@ def download(dest_dir):
     base_bundle = os.path.join(temp_dir, 'themes/base/jquery-ui.css')
     if not os.path.exists(base_bundle):
         all_css = os.path.join(temp_dir, 'themes/base/jquery.ui.all.css')
-        file(base_bundle, 'w').writelines(expand_css_imports(all_css))
+        open(base_bundle, 'w').writelines(expand_css_imports(all_css))
 
     # Install the downloaded resources
     if os.path.exists(dest_dir):
@@ -198,7 +199,7 @@ def yui_compress(infile, outfile):
     if ext not in srctypes:
         raise ValueError("unknown file extension for file %r" % infile)
 
-    with file(infile, 'r') as fp:
+    with open(infile, 'r') as fp:
         input_text = fp.read()
 
     # Preserve leading comment in compressed ouput
@@ -206,20 +207,20 @@ def yui_compress(infile, outfile):
     if m:
         input_text = m.group(1) + '!' + input_text[m.end():]
 
-    postdata = urllib.urlencode({
+    postdata = urllib.parse.urlencode({
         'compresstext': input_text,
         'type': srctypes[ext],
         'redirect': 'on',
         })
 
-    print 'compressing %r to %r' % (infile, outfile)
-    result = urllib.urlopen(online_yui_compressor_url, postdata)
+    print('compressing %r to %r' % (infile, outfile))
+    result = urllib.request.urlopen(online_yui_compressor_url, postdata)
 
     output_dir = os.path.dirname(outfile)
     if output_dir and not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    with file(outfile, 'w') as outfp:
+    with open(outfile, 'w') as outfp:
         shutil.copyfileobj(result, outfp)
 
 ################################################################
@@ -543,8 +544,8 @@ def main():
     download(resources_dir)
 
     code = compile_resource_declarations(resources_dir)
-    print "writing", init_py
-    file(init_py, 'w').writelines(code)
+    print("writing", init_py)
+    open(init_py, 'w').writelines(code)
 
 if __name__ == '__main__':
     main()
