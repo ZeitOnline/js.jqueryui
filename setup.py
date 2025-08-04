@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.10.4dev'
+version = '1.10.3+tooltip'
 
 
 def read(*rnames):
