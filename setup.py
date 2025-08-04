@@ -1,7 +1,7 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 import os
 
-version = '1.10.3+tooltip'
+version = '1.10.3+tooltip.2'
 
 
 def read(*rnames):
@@ -28,14 +28,12 @@ setup(
     author='Fanstatic Developers',
     author_email='fanstatic@googlegroups.com',
     license='BSD',
-    packages=find_packages(),
-    namespace_packages=['js'],
+    packages=find_namespace_packages(),
     include_package_data=True,
     zip_safe=False,
     install_requires=[
         'fanstatic',
         'js.jquery',
-        'setuptools',
     ],
     entry_points={
         'fanstatic.libraries': [
